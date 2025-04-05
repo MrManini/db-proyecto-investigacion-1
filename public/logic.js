@@ -10,7 +10,7 @@ async function sendRequest(url, method, body) {
 document.getElementById("addUserForm").addEventListener("submit", (e) => {
     e.preventDefault();
     sendRequest("/users", "POST", {
-        idU: document.getElementById("userId").value,
+        idu: document.getElementById("userId").value,
         nombre: document.getElementById("userName").value
     });
 });
@@ -18,7 +18,7 @@ document.getElementById("addUserForm").addEventListener("submit", (e) => {
 document.getElementById("addPostForm").addEventListener("submit", (e) => {
     e.preventDefault();
     sendRequest("/posts", "POST", {
-        idP: document.getElementById("postId").value,
+        idp: document.getElementById("postId").value,
         contenido: document.getElementById("postContent").value,
         autorId: document.getElementById("postAuthorId").value
     });
@@ -27,8 +27,7 @@ document.getElementById("addPostForm").addEventListener("submit", (e) => {
 document.getElementById("addCommentForm").addEventListener("submit", (e) => {
     e.preventDefault();
     sendRequest("/comments", "POST", {
-        consec: document.getElementById("commentId").value,
-        texto: document.getElementById("commentText").value,
+        contenido: document.getElementById("commentText").value,
         autorId: document.getElementById("commentAuthorId").value,
         postId: document.getElementById("commentPostId").value
     });

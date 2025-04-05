@@ -16,14 +16,16 @@ app.use(express.urlencoded({ extended: true }));
 
 // Create a User
 app.post("/users", async (req, res) => {
-    const { idU, nombre } = req.body;
+    let { idu, nombre } = req.body;
     const session = driver.session();
     
     try {
-        await session.run("CREATE (:Usuario {idU: $idU, nombre: $nombre})", { idU, nombre });
+        idu = parseInt(idu);
+        await session.run("CREATE (:Usuario {idu: $idu, nombre: $nombre})", { idu, nombre });
         res.send("Usuario creado!");
     } catch (error) {
-        res.status(500).send(error);
+        console.error(error);
+        res.status(500).send("error");
     } finally {
         session.close();
     }
@@ -31,18 +33,20 @@ app.post("/users", async (req, res) => {
 
 // Create a Post
 app.post("/posts", async (req, res) => {
-    const { idP, contenido, autorId } = req.body;
+    let { idp, contenido, autorId } = req.body;
     const session = driver.session();
 
     try {
+        idp = parseInt(idp);
+        autorId = parseInt(autorId);
         await session.run(`
-            MATCH (u:Usuario {idU: $autorId})
-            CREATE (p:Post {idP: $idP, contenido: $contenido})
-            CREATE (u)-[:CREA]->(p)
-        `, { idP, contenido, autorId });
+            MATCH (u:Usuario {idu: $autorId})
+            CREATE (p:Post {idp: $idp, contenido: $contenido})
+            CREATE (u)-[:PUBLICA]->(p)
+        `, { idp, contenido, autorId });
         res.send("Post creado!");
     } catch (error) {
-        res.status(500).send(error);
+        res.status(500).send("error: " + error);
     } finally {
         session.close();
     }
@@ -50,16 +54,21 @@ app.post("/posts", async (req, res) => {
 
 // Create a Comment
 app.post("/comments", async (req, res) => {
-    const { consec, texto, autorId, postId } = req.body;
+    let { contenido, autorId, postId } = req.body;
     const session = driver.session();
 
     try {
+        autorId = parseInt(autorId);
+        postId = parseInt(postId);
         await session.run(`
-            MATCH (u:Usuario {idU: $autorId}), (p:Post {idP: $postId})
-            CREATE (c:Comentario {consec: $consec, texto: $texto})
-            CREATE (u)-[:ESCRIBE]->(c)
-            CREATE (c)-[:PERTENECE_A]->(p)
-        `, { consec, texto, autorId, postId });
+            MATCH (p:Post {idp: $postId})
+            OPTIONAL MATCH (p)-[:TIENE]->(c:Comentario)
+            MATCH (u:Usuario {idu: $autorId})
+            WITH p, u, max(c.consec) AS lastConsec
+            CREATE (new:Comentario {contenido: $contenido, consec: coalesce(lastConsec, 0) + 1, fechorCom: datetime()})
+            CREATE (p)-[:TIENE]->(new)
+            CREATE (u)-[:HACE]->(new)
+        `, { contenido, autorId, postId });
         res.send("Comentario creado!");
     } catch (error) {
         res.status(500).send(error);
@@ -73,7 +82,7 @@ app.delete("/users/:id", async (req, res) => {
     const session = driver.session();
 
     try {
-        await session.run("MATCH (u:Usuario {idU: $idU}) DETACH DELETE u", { idU: parseInt(req.params.id) });
+        await session.run("MATCH (u:Usuario {idu: $idu}) DETACH DELETE u", { idU: parseInt(req.params.id) });
         res.send("Usuario eliminado!");
     } catch (error) {
         res.status(500).send(error);
@@ -85,9 +94,10 @@ app.delete("/users/:id", async (req, res) => {
 // Delete a Post
 app.delete("/posts/:id", async (req, res) => {
     const session = driver.session();
+    let { idp } = req.body;
 
     try {
-        await session.run("MATCH (p:Post {idP: $idP}) DETACH DELETE p", { idP: parseInt(req.params.id) });
+        await session.run("MATCH (p:Post {idp: $idp}) DETACH DELETE p", { idP: parseInt(req.params.id) });
         res.send("Post eliminado!");
     } catch (error) {
         res.status(500).send(error);
@@ -99,9 +109,14 @@ app.delete("/posts/:id", async (req, res) => {
 // Delete a Comment
 app.delete("/comments/:id", async (req, res) => {
     const session = driver.session();
+    let { postId, consec } = req.body;
 
     try {
-        await session.run("MATCH (c:Comentario {consec: $consec}) DETACH DELETE c", { consec: parseInt(req.params.id) });
+        postId = parseInt(req.params.id);
+        consec = parseInt(req.params.consec);
+        await session.run(`
+            MATCH (c:Comentario {postId: $postId, consec: $consec}) DETACH DELETE c
+        `, { postId, consec });
         res.send("Comentario eliminado!");
     } catch (error) {
         res.status(500).send(error);
