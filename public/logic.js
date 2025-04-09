@@ -65,22 +65,20 @@ document.getElementById("deleteUserForm").addEventListener("submit", async (e) =
     e.preventDefault();
     const id = document.getElementById("deleteUserId").value;
     
-    await fetch(`/users/${id}`, { method: "DELETE" });
-    alert("User deleted!");
+    sendRequest(`/users/${id}`, "DELETE");
 });
 
 document.getElementById("deletePostForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const id = document.getElementById("deletePostId").value;
     
-    await fetch(`/posts/${id}`, { method: "DELETE" });
-    alert("Post deleted!");
+    sendRequest(`/posts/${id}`, "DELETE");
 });
 
 document.getElementById("deleteCommentForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const id = document.getElementById("deleteCommentId").value;
-    
-    await fetch(`/comments/${id}`, { method: "DELETE" });
-    alert("Comment deleted!");
+    sendRequest("/comments", "DELETE", {
+        postId: document.getElementById("deleteCommentPostId").value,
+        consec: document.getElementById("deleteCommentId").value
+    });
 });

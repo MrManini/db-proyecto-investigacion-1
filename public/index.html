@@ -7,7 +7,6 @@
 </head>
 <body>
     <h2>Add Users</h2>
-    
     <form id="addUserForm">
         <input type="number" id="userId" placeholder="User ID" required>
         <input type="text" id="userName" placeholder="User Name" required>
@@ -15,7 +14,6 @@
     </form>
 
     <h2>Add Posts</h2>
-    
     <form id="addPostForm">
         <input type="number" id="postId" placeholder="Post ID" required>
         <input type="text" id="postContent" placeholder="Post Content" required>
@@ -24,7 +22,6 @@
     </form>
 
     <h2>Add Comments</h2>
-    
     <form id="addCommentForm">
         <input type="text" id="commentText" placeholder="Comment Text" required>
         <input type="number" id="commentAuthorId" placeholder="Author ID" required>
@@ -43,12 +40,18 @@
 
     <h2>Update Post</h2>
     <form id="updatePostForm">
-        <input type="number" id="updatePostId" placeholder="
-        id="updateCommentId" placeholder="Comment ID" required>
-        <input type="text" id="updateCommentText" placeholder="New Text" required>
+        <input type="number" id="updatePostId" placeholder="Post ID" required>
+        <input type="text" id="updatePostText" placeholder="New Content" required>
         <button type="submit">Update Comment</button>
     </form>
     
+    <h2>Update Comment</h2>
+    <form id="updateCommentForm">
+        <input type="number" id="updateCommentId" placeholder="Comment ID" required>
+        <input type="text" id="updateCommentText" placeholder="New Text" required>
+        <button type="submit">Update Comment</button>
+    </form>
+
     <h2>Delete User</h2>
     <form id="deleteUserForm">
         <input type="number" id="deleteUserId" placeholder="User ID" required>
@@ -63,6 +66,7 @@
     
     <h2>Delete Comment</h2>
     <form id="deleteCommentForm">
+        <input type="number" id="deleteCommentPostId" placeholder="Post ID" required>
         <input type="number" id="deleteCommentId" placeholder="Comment ID" required>
         <button type="submit">Delete Comment</button>
     </form>

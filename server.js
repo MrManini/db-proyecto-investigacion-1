@@ -83,8 +83,8 @@ app.delete("/users/:id", async (req, res) => {
     const session = driver.session();
 
     try {
-        await session.run("MATCH (u:Usuario {idu: $idu}) DETACH DELETE u", { idU: parseInt(req.params.id) });
-        res.send("Usuario eliminado!");
+        await session.run("MATCH (u:Usuario {idu: $idu}) DETACH DELETE u", { idu: parseInt(req.params.id) });
+        res.send(`Usuario ${req.params.id} eliminado!`);
     } catch (error) {
         res.status(500).send(error);
     } finally {
@@ -98,7 +98,7 @@ app.delete("/posts/:id", async (req, res) => {
     let { idp } = req.body;
 
     try {
-        await session.run("MATCH (p:Post {idp: $idp}) DETACH DELETE p", { idP: parseInt(req.params.id) });
+        await session.run("MATCH (p:Post {idp: $idp}) DETACH DELETE p", { idp: parseInt(req.params.id) });
         res.send("Post eliminado!");
     } catch (error) {
         res.status(500).send(error);
@@ -108,15 +108,17 @@ app.delete("/posts/:id", async (req, res) => {
 });
 
 // Delete a Comment
-app.delete("/comments/:id", async (req, res) => {
+app.delete("/comments/", async (req, res) => {
     const session = driver.session();
     let { postId, consec } = req.body;
-
+    
     try {
-        postId = parseInt(req.params.id);
-        consec = parseInt(req.params.consec);
+        postId = parseInt(postId);
+        consec = parseInt(consec);
         await session.run(`
-            MATCH (c:Comentario {postId: $postId, consec: $consec}) DETACH DELETE c
+            MATCH (p:Post {idp: $postId})
+            MATCH (p)-[:TIENE]->(c:Comentario {consec: $consec})
+            DETACH DELETE c
         `, { postId, consec });
         res.send("Comentario eliminado!");
     } catch (error) {
