@@ -34,6 +34,14 @@ document.getElementById("addCommentForm").addEventListener("submit", (e) => {
     });
 });
 
+document.getElementById("authorizeCommentForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    sendRequest("/comments", "PUT", {
+        postId: document.getElementById("authorizeCommentPostId").value,
+        consec: document.getElementById("authorizeCommentId").value
+    });
+});
+
 document.getElementById("updateUserForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const id = document.getElementById("updateUserId").value;

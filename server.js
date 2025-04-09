@@ -78,6 +78,26 @@ app.post("/comments", async (req, res) => {
     }
 });
 
+// Authorize a comment
+app.put("/comments", async (req, res) => {
+    let { postId, consec } = req.body;
+    const session = driver.session();
+
+    try {
+        postId = parseInt(postId);
+        consec = parseInt(consec);
+        await session.run(`
+            MATCH (p:Post {idp: $postId})-[:TIENE]->(c:Comentario {consec: $consec})
+            SET c.fechorAut = datetime()
+        `, { postId, consec });
+        res.send("Comentario autorizado!");
+    } catch (error) {
+        res.status(500).send(error);
+    } finally {
+        session.close();
+    }
+});
+
 // Delete a User (removes relationships too)
 app.delete("/users/:id", async (req, res) => {
     const session = driver.session();
@@ -108,7 +128,7 @@ app.delete("/posts/:id", async (req, res) => {
 });
 
 // Delete a Comment
-app.delete("/comments/", async (req, res) => {
+app.delete("/comments", async (req, res) => {
     const session = driver.session();
     let { postId, consec } = req.body;
     
