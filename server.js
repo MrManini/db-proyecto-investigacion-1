@@ -54,8 +54,9 @@ app.post("/posts", async (req, res) => {
 
 // Create a Comment
 app.post("/comments", async (req, res) => {
-    let { contenido, autorId, postId } = req.body;
+    let { contenido, autorId, postId, likeNotLike } = req.body;
     const session = driver.session();
+    console.log(req.body); 
 
     try {
         autorId = parseInt(autorId);
@@ -65,10 +66,10 @@ app.post("/comments", async (req, res) => {
             OPTIONAL MATCH (p)-[:TIENE]->(c:Comentario)
             MATCH (u:Usuario {idu: $autorId})
             WITH p, u, max(c.consec) AS lastConsec
-            CREATE (new:Comentario {contenido: $contenido, consec: coalesce(lastConsec, 0) + 1, fechorCom: datetime()})
+            CREATE (new:Comentario {contenido: $contenido, consec: coalesce(lastConsec, 0) + 1, fechorCom: datetime(), likeNotLike: $likeNotLike})
             CREATE (p)-[:TIENE]->(new)
             CREATE (u)-[:HACE]->(new)
-        `, { contenido, autorId, postId });
+        `, { contenido, autorId, postId, likeNotLike });
         res.send("Comentario creado!");
     } catch (error) {
         res.status(500).send(error);

@@ -29,7 +29,8 @@ document.getElementById("addCommentForm").addEventListener("submit", (e) => {
     sendRequest("/comments", "POST", {
         contenido: document.getElementById("commentText").value,
         autorId: document.getElementById("commentAuthorId").value,
-        postId: document.getElementById("commentPostId").value
+        postId: document.getElementById("commentPostId").value,
+        likeNotLike: document.getElementById("commentLikeNotLike").checked
     });
 });
 
