@@ -38,7 +38,8 @@ document.getElementById("authorizeCommentForm").addEventListener("submit", (e) =
     e.preventDefault();
     sendRequest("/comments", "PUT", {
         postId: document.getElementById("authorizeCommentPostId").value,
-        consec: document.getElementById("authorizeCommentId").value
+        consec: document.getElementById("authorizeCommentId").value,
+        userId: document.getElementById("authorizeCommentUserId").value,
     });
 });
 

@@ -80,16 +80,18 @@ app.post("/comments", async (req, res) => {
 
 // Authorize a comment
 app.put("/comments", async (req, res) => {
-    let { postId, consec } = req.body;
+    let { postId, consec, userId } = req.body;
     const session = driver.session();
 
     try {
         postId = parseInt(postId);
         consec = parseInt(consec);
+        userId = parseInt(userId);
         await session.run(`
-            MATCH (p:Post {idp: $postId})-[:TIENE]->(c:Comentario {consec: $consec})
+            MATCH (u:Usuario {idu: $userId})-[:PUBLICA]->(p:Post {idp: $postId})-[:TIENE]->(c:Comentario {consec: $consec})
             SET c.fechorAut = datetime()
-        `, { postId, consec });
+            CREATE (u)-[:AUTORIZA]->(c)
+        `, { postId, consec, userId });
         res.send("Comentario autorizado!");
     } catch (error) {
         res.status(500).send(error);
