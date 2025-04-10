@@ -48,26 +48,24 @@ document.getElementById("updateUserForm").addEventListener("submit", async (e) =
     const id = document.getElementById("updateUserId").value;
     const nombre = document.getElementById("updateUserName").value;
     
-    await fetch(`/users/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nombre }) });
-    alert("User updated!");
+    sendRequest(`/users/${id}`, "PUT", { userId: id, nombre });
 });
 
 document.getElementById("updatePostForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const id = document.getElementById("updatePostId").value;
-    const contenido = document.getElementById("updatePostContent").value;
+    const contenido = document.getElementById("updatePostText").value;
     
-    await fetch(`/posts/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contenido }) });
-    alert("Post updated!");
+    sendRequest(`/posts/${id}`, "PUT", { postId: id, contenido });
 });
 
 document.getElementById("updateCommentForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const id = document.getElementById("updateCommentId").value;
-    const texto = document.getElementById("updateCommentText").value;
+    const postId = document.getElementById("updateCommentPostId").value;
+    const consec = document.getElementById("updateCommentId").value;
+    const contenido = document.getElementById("updateCommentText").value;
     
-    await fetch(`/comments/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ texto }) });
-    alert("Comment updated!");
+    sendRequest(`/comments/${consec}`, "PUT", { postId, consec, contenido });
 });
 
 document.getElementById("deleteUserForm").addEventListener("submit", async (e) => {

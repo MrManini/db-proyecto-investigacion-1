@@ -100,6 +100,56 @@ app.put("/comments", async (req, res) => {
     }
 });
 
+// Update a User
+app.put("/users/:id", async (req, res) => {
+    let { userId, nombre } = req.body;
+    const session = driver.session();
+
+    try {
+        userId = parseInt(userId);
+        await session.run("MATCH (u:Usuario {idu: $userId}) SET u.nombre = $nombre", { userId, nombre });
+        res.send("Usuario actualizado!");
+    } catch (error) {
+        res.status(500).send(error);
+    } finally {
+        session.close();
+    }
+});
+
+// Update a Post
+app.put("/posts/:id", async (req, res) => {
+    let { postId, contenido } = req.body;
+    const session = driver.session();
+
+    try {
+        postId = parseInt(postId);
+        await session.run("MATCH (p:Post {idp: $postId}) SET p.contenido = $contenido", { postId, contenido });
+        res.send("Post actualizado!");
+    } catch (error) {
+        res.status(500).send(error);
+    } finally {
+        session.close();
+    }
+});
+
+// Update a Comment
+app.put("/comments/:id", async (req, res) => {
+    let { postId, consec, contenido } = req.body;
+    const session = driver.session();
+
+    try {
+        postId = parseInt(postId);
+        consec = parseInt(consec);
+        await session.run("MATCH (p:Post {idp: $postId})-[:TIENE]->(c:Comentario {consec: $consec}) SET c.contenido = $contenido", 
+            { postId, consec, contenido });
+        res.send("Comentario actualizado!");
+    } catch (error) {
+        res.status(500).send(error);
+    } finally {
+        session.close();
+    }
+});
+
 // Delete a User (removes relationships too)
 app.delete("/users/:id", async (req, res) => {
     const session = driver.session();
