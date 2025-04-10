@@ -56,7 +56,6 @@ app.post("/posts", async (req, res) => {
 app.post("/comments", async (req, res) => {
     let { contenido, autorId, postId, likeNotLike } = req.body;
     const session = driver.session();
-    console.log(req.body); 
 
     try {
         autorId = parseInt(autorId);
@@ -153,9 +152,11 @@ app.put("/comments/:id", async (req, res) => {
 // Delete a User (removes relationships too)
 app.delete("/users/:id", async (req, res) => {
     const session = driver.session();
+    let { idu } = req.body;
 
     try {
-        await session.run("MATCH (u:Usuario {idu: $idu}) DETACH DELETE u", { idu: parseInt(req.params.id) });
+        idu = parseInt(idu);
+        await session.run("MATCH (u:Usuario {idu: $idu}) DETACH DELETE u", { idu });
         res.send(`Usuario ${req.params.id} eliminado!`);
     } catch (error) {
         res.status(500).send(error);
@@ -170,7 +171,8 @@ app.delete("/posts/:id", async (req, res) => {
     let { idp } = req.body;
 
     try {
-        await session.run("MATCH (p:Post {idp: $idp}) DETACH DELETE p", { idp: parseInt(req.params.id) });
+        idp = parseInt(idp);
+        await session.run("MATCH (p:Post {idp: $idp}) DETACH DELETE p", { idp });
         res.send("Post eliminado!");
     } catch (error) {
         res.status(500).send(error);
@@ -200,4 +202,88 @@ app.delete("/comments", async (req, res) => {
     }
 });
 
+// Get all posts from a user
+app.get("/posts/:id", async (req, res) => {
+    const session = driver.session();
+    let idu = req.params.id;
+
+    try {
+        idu = parseInt(idu);
+        const result = await session.run(`
+            MATCH (u:Usuario {idu: $idu})-[:PUBLICA]->(p:Post)
+            WHERE NOT u.nombre IN ["ANONIMO", "MANAGER", "anonimo", "manager"]
+            RETURN p
+        `, { idu });
+
+        const posts = result.records.map(record => {
+            const rawPost = record.get('p').properties;
+            return cleanNeo4jObject(rawPost);
+        });
+        res.status(200).json(posts);
+    } catch (error) {
+        res.status(500).send(error);
+    } finally {
+        session.close();
+    }
+});
+
+// Get all comments from a post
+app.get("/comments/:id", async (req, res) => {
+    const session = driver.session();
+    let idp = req.params.id;
+
+    try {
+        idp = parseInt(idp);
+        const result = await session.run(`
+            MATCH (p:Post {idp: $idp})-[:TIENE]->(c:Comentario)
+            RETURN c
+        `, { idp });
+
+        const comments = result.records.map(record => {
+            const rawComment = record.get('c').properties;
+            return cleanNeo4jObject(rawComment);
+        });
+        res.status(200).json(comments);
+    } catch (error) {
+        res.status(500).send(error);
+    } finally {
+        session.close();
+    }
+});
+
 app.listen(3000, () => console.log("Server running on http://localhost:3000"));
+
+function cleanNeo4jObject(obj) {
+    if (Array.isArray(obj)) {
+        return obj.map(cleanNeo4jObject);
+    } else if (obj && typeof obj === 'object') {
+        if (typeof obj.toNumber === 'function') {
+            return obj.toNumber();
+        }
+  
+        const neo4jDateFields = ['year', 'month', 'day', 'hour', 'minute', 'second', 'nanosecond'];
+        const isDateTime = neo4jDateFields.every(f => obj.hasOwnProperty(f));
+  
+        if (isDateTime) {
+            const date = new Date(
+            obj.year.toNumber(), 
+            obj.month.toNumber() - 1, 
+            obj.day.toNumber(), 
+            obj.hour.toNumber(), 
+            obj.minute.toNumber(), 
+            obj.second.toNumber(), 
+            Math.floor(obj.nanosecond.toNumber() / 1e6) // nanosecond -> milliseconds
+            );
+            return date.toISOString();
+        }
+    
+        // Recursivo pa' cualquier otro objeto
+        const newObj = {};
+        for (let key in obj) {
+            newObj[key] = cleanNeo4jObject(obj[key]);
+        }
+        return newObj;
+    }
+    return obj;
+}
+  

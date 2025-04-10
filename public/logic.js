@@ -89,3 +89,53 @@ document.getElementById("deleteCommentForm").addEventListener("submit", async (e
         consec: document.getElementById("deleteCommentId").value
     });
 });
+
+document.getElementById("getUserPostsForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("getUserPostsId").value;
+    
+    const res = await fetch(`/posts/${id}`);
+    const data = await res.json();
+    
+    showPosts(data);
+});
+
+document.getElementById("getPostCommentsForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("getPostCommentsId").value;
+    
+    const res = await fetch(`/comments/${id}`);
+    const data = await res.json();
+    
+    showComments(data);
+});
+
+function showPosts(posts) {
+    const msg = posts.map(post => {
+        return `
+🧾 Post #${post.idp}
+💬 "${post.contenido}"
+        `;
+    }).join('\n\n');
+
+    alert(msg);
+}
+
+function showComments(comments) {
+    let msg = comments.map(comment => {
+        
+        let commentStatus = comment.fechorAut ? "✅" : "❌";
+
+        const line = `
+#${comment.consec}
+✔️ Like: ${comment.likeNotLike}
+💬 "${comment.contenido}"
+🕒 Creado: ${comment.fechorCom}
+${commentStatus} Autorizado: ${comment.fechorAut ? comment.fechorAut : "No autorizado"}
+        `;
+        
+        return line;
+    }).join('\n\n');
+
+    alert(msg);
+}
